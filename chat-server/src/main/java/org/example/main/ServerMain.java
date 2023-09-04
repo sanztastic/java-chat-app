@@ -6,11 +6,10 @@ import java.io.IOException;
 import java.util.Scanner;
 
 public class ServerMain {
+
+    private static final int SERVER_PORT = 6666;
     public static void main(String[] args) throws IOException {
-        Scanner scanner = new Scanner(System.in);
-        System.out.print("Please enter the PORT you want the server to run on: ");
-        int port = scanner.nextInt();
-        ChatServer chatServer = new ChatServer(port);
+        ChatServer chatServer = new ChatServer(SERVER_PORT);
         chatServer.start();
     }
 }
