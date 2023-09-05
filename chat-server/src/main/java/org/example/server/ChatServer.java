@@ -25,12 +25,16 @@ public class ChatServer extends Thread{
     public void run() {
         try(ServerSocket serverSocket = new ServerSocket(serverPort)){
             while(true){
+                System.out.println("Currently active users");
+                this.serverWorkerMap.forEach((key,value)->{
+                    System.out.println("Client: "+ key);
+                    System.out.println("Value: "+ value);
+                });
                 System.out.println("About to accept the connection");
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("Accepted the connection from the client");
                 ServerWorker serverWorker = new ServerWorker(clientSocket,serverWorkerMap);
                 serverWorker.start();
-
             }
         }catch (IOException e){
             e.printStackTrace();
