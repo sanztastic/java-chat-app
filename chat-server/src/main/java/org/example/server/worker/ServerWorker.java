@@ -6,6 +6,8 @@ import java.util.Map;
 
 public class ServerWorker extends Thread{
     private final Socket clientSocket;
+    private PrintWriter writer;
+    private BufferedReader reader;
     private final Map<String, ServerWorker> serverWorkerMap;
     private String clientName;
 
@@ -17,35 +19,41 @@ public class ServerWorker extends Thread{
     @Override
     public void run() {
         try {
-            OutputStream outputStream = clientSocket.getOutputStream();
-            PrintWriter writer = new PrintWriter(outputStream,true);
-            InputStream inputStream = clientSocket.getInputStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-            String line;
-            while(true){
-                while((line= reader.readLine())!=null){
-                    String[] tokens = line.split("\\s");
-                    System.out.println(tokens[0]);
-                    if(tokens[0].equalsIgnoreCase("username")){
-                        this.clientName = tokens[1];
-                        System.out.println("Client name is "+this.clientName);
-                        this.serverWorkerMap.put(this.clientName,this);
-                        System.out.println("Registration Completed!!");
-                        writer.println("Registration Completed!!");
-                    }
-                }
-
-            }
+            initializeServerWorker();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    @Override
-    public String toString() {
-        return "ServerWorker{" +
-                "clientSocket=" + clientSocket +
-                ", clientName='" + clientName + '\'' +
-                '}';
+    private void initializeServerWorker() throws IOException {
+        OutputStream outputStream = clientSocket.getOutputStream();
+        this.writer = new PrintWriter(outputStream, true);
+        InputStream inputStream = clientSocket.getInputStream();
+        this.reader = new BufferedReader(new InputStreamReader(inputStream));
+        parseClientToken();
+    }
+
+    public void parseClientToken() throws IOException {
+        String line;
+        while ((line = this.reader.readLine()) != null) {
+            String[] tokens = line.split("\\s");
+            redirectTokens(tokens);
+        }
+    }
+
+    private void redirectTokens(String[] tokens) {
+        System.out.println(tokens[0]);
+        if (tokens[0].equalsIgnoreCase("username")) {
+            this.clientName = tokens[1];
+            System.out.println("Client name is " + this.clientName);
+            this.serverWorkerMap.put(this.clientName, this);
+            writer.println("Registration Completed!!");
+        }
+    }
+
+    private void closeSocketConnection() throws IOException {
+        this.reader.close();
+        this.writer.close();
+        this.clientSocket.close();
     }
 }
